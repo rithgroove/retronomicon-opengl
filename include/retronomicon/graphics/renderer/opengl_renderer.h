@@ -1,7 +1,6 @@
 #pragma once
-#include <SDL2/SDL.h>
-#include <GL/glew.h>
-#include "retronomicon/graphics/renderer/irenderer.h"
+#include "retronomicon/graphics/renderer/i_renderer.h"
+#include <SDL.h>
 
 namespace retronomicon::opengl {
 
@@ -14,11 +13,8 @@ namespace retronomicon::opengl {
         ~OpenGLRenderer() override;
 
     private:
-        SDL_Window* window = nullptr;
-        SDL_GLContext glContext = nullptr;
-        int screenWidth;
-        int screenHeight;
-        const char* windowTitle;
+        struct Impl;      // forward declaration
+        Impl* impl;       // opaque pointer to SDL/OpenGL stuff
     };
 
 } // namespace retronomicon::opengl
