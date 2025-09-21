@@ -10,6 +10,5 @@ add_library(retronomicon-opengl)
 target_link_libraries(retronomicon-opengl
     PUBLIC
         retronomicon-opengl-graphics
-        SDL2
 )
 
