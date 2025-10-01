@@ -15,14 +15,16 @@ set(RETRO_OPENGL_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include CACHE PATH "Ret
 # External libraries
 add_subdirectory(external/SDL2)
 add_subdirectory(external/glad)
+add_subdirectory(external/glfw)
 
 # Engine source (will add retronomicon-opengl library)
 add_subdirectory(src)
 
 target_link_libraries(retronomicon-opengl
-    PUBLIC
+    PRIVATE
         glad
-        SDL2  
+        SDL2 
+        glfw
 )
 
 # Public include paths
