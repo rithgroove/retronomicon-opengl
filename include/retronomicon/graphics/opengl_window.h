@@ -1,8 +1,8 @@
 #pragma once
 
-#include <SDL.h>
 #include <stdexcept>
 #include <glad/gl.h>
+#include <GLFW/glfw3.h>
 #include "retronomicon/graphics/i_window.h"
 
 namespace retronomicon::opengl::graphics {
@@ -10,9 +10,7 @@ namespace retronomicon::opengl::graphics {
 /**
  * @brief OpenGL-capable window implementation of IWindow.
  *
- * Uses SDL2 to create an OpenGL context and manage the window.
- * This class is meant for rendering with OpenGL, unlike the SDLWindow
- * which uses SDL's 2D renderer.
+ * Uses GLFW to create an OpenGL context and manage the window.
  */
 class OpenGLWindow : public retronomicon::graphics::IWindow {
     public:
@@ -52,18 +50,14 @@ class OpenGLWindow : public retronomicon::graphics::IWindow {
         void swapBuffers();
 
         /**
-         * @brief Get raw SDL_Window pointer.
+         * @brief Get raw GLFWwindow pointer.
          */
-        SDL_Window* getSDLWindow() const { return m_window; }
-
-        /**
-         * @brief Get OpenGL context for this window.
-         */
-        SDL_GLContext getGLContext() const { return m_glContext; }
+        GLFWwindow* getGLFWwindow() const { return m_window; }
 
     private:
-        SDL_Window* m_window = nullptr;   ///< SDL window handle.
-        SDL_GLContext m_glContext = nullptr; ///< OpenGL context.
+        GLFWwindow* m_window = nullptr; ///< GLFW window handle.
+        int m_width;
+        int m_height;
     };
 
 } // namespace retronomicon::opengl::graphics
