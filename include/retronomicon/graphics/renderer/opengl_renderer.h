@@ -1,48 +1,38 @@
 #pragma once
 
 #include "retronomicon/graphics/renderer/i_renderer.h"
-#include <SDL.h>
 #include <string>
-
-// include glad for GL function loading
 #include <glad/gl.h>
+#include <GLFW/glfw3.h>
 
 namespace retronomicon::opengl {
 
     /**
-     * @brief OpenGL-based implementation of the IRenderer interface.
+     * @brief OpenGL-based implementation of the IRenderer interface using GLFW.
      */
     class OpenGLRenderer : public retronomicon::graphics::renderer::IRenderer {
     public:
-        /**
-         * @brief Construct an OpenGLRenderer with given window title, width, and height.
-         * @param title The window title.
-         * @param width Window width in pixels.
-         * @param height Window height in pixels.
-         */
         OpenGLRenderer(const std::string& title, int width, int height);
-
-        /**
-         * @brief Destructor shuts down OpenGL/SDL if not already done.
-         */
         virtual ~OpenGLRenderer();
 
-        /// Initialize SDL, create window, and load GL functions.
+        /// Initialize GLFW, create window, and load GL functions.
         void init() override;
 
         /// Render a test background color.
         void render() override;
 
-        /// Clean up OpenGL/SDL resources.
+        /// Clean up OpenGL/GLFW resources.
         void shutdown() override;
+
+        /// Check if window should close.
+        bool shouldClose() const;
 
     private:
         std::string m_title;
         int m_width;
         int m_height;
 
-        SDL_Window* m_window = nullptr;
-        SDL_GLContext m_context = nullptr;
+        GLFWwindow* m_window = nullptr;
         bool m_initialized = false;
     };
 

@@ -1,10 +1,10 @@
-#include "OpenGLWindow.h"
+#include "retronomicon/graphics/opengl_window.h"
 #include <stdexcept>
 
 namespace retronomicon::opengl::graphics {
 
     OpenGLWindow::OpenGLWindow(const std::string& title, int width, int height)
-        : m_width(width), m_height(height)
+        : IWindow(title,width,height)
     {
         if (!glfwInit()) {
             throw std::runtime_error("Failed to initialize GLFW");

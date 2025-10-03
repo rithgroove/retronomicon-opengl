@@ -48,7 +48,9 @@ class OpenGLWindow : public retronomicon::graphics::IWindow {
          * @brief Swap the OpenGL buffers.
          */
         void swapBuffers();
+        
 
+        void pollEvents();
         /**
          * @brief Get raw GLFWwindow pointer.
          */

@@ -12,35 +12,24 @@ namespace retronomicon::opengl {
     }
 
     void OpenGLRenderer::init() {
-        if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-            throw std::runtime_error("Failed to initialize SDL: " + std::string(SDL_GetError()));
+        if (!glfwInit()) {
+            throw std::runtime_error("Failed to initialize GLFW");
         }
 
-        // Request a Core GL 3.0+ context (change to ES profile if building GLES)
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+        // Request OpenGL 3.3 Core profile
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        m_window = SDL_CreateWindow(
-            m_title.c_str(),
-            SDL_WINDOWPOS_CENTERED,
-            SDL_WINDOWPOS_CENTERED,
-            m_width,
-            m_height,
-            SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN
-        );
-
+        m_window = glfwCreateWindow(m_width, m_height, m_title.c_str(), nullptr, nullptr);
         if (!m_window) {
-            throw std::runtime_error("Failed to create SDL window: " + std::string(SDL_GetError()));
+            glfwTerminate();
+            throw std::runtime_error("Failed to create GLFW window");
         }
 
-        m_context = SDL_GL_CreateContext(m_window);
-        if (!m_context) {
-            throw std::runtime_error("Failed to create OpenGL context: " + std::string(SDL_GetError()));
-        }
+        glfwMakeContextCurrent(m_window);
 
-        // Load GL functions via GLAD2
-        if (!gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress)) {
+        if (!gladLoadGL((GLADloadfunc)glfwGetProcAddress)) {
             throw std::runtime_error("Failed to initialize GLAD");
         }
 
@@ -48,33 +37,31 @@ namespace retronomicon::opengl {
         glClearColor(0.1f, 0.1f, 0.3f, 1.0f);
 
         m_initialized = true;
-        int major = 0, minor = 0;
-        SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
-        SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
 
-        std::cout << "OpenGL version: " << major << "." << minor << std::endl;
+        std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
     }
 
     void OpenGLRenderer::render() {
         if (!m_initialized) return;
 
         glClear(GL_COLOR_BUFFER_BIT);
-        SDL_GL_SwapWindow(m_window);
+        glfwSwapBuffers(m_window);
+        glfwPollEvents();
     }
 
     void OpenGLRenderer::shutdown() {
-        if (m_context) {
-            SDL_GL_DeleteContext(m_context);
-            m_context = nullptr;
-        }
         if (m_window) {
-            SDL_DestroyWindow(m_window);
+            glfwDestroyWindow(m_window);
             m_window = nullptr;
         }
         if (m_initialized) {
-            SDL_Quit();
+            glfwTerminate();
             m_initialized = false;
         }
+    }
+
+    bool OpenGLRenderer::shouldClose() const {
+        return m_window ? glfwWindowShouldClose(m_window) : true;
     }
 
 } // namespace retronomicon::opengl
