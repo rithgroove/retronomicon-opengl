@@ -9,8 +9,11 @@ target_include_directories(
     ${RETRO_DIR}/include
     ${RETRO_OPENGL_DIR}/include
     ${RETRO_OPENGL_DIR}/external/glad/include
+    ${RETRO_OPENGL_DIR}/external/gflw/include
+    ${RETRO_OPENGL_DIR}/external/openal/include
 )
 
 target_link_libraries(retronomicon-opengl-asset
         glfw           # static glfw
+        OpenAL
         )
