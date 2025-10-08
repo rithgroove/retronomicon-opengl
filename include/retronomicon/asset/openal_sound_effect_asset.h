@@ -19,6 +19,14 @@ namespace retronomicon::asset {
      */
     class OpenALSoundEffectAsset final : public SoundEffectAsset {
     public:
+
+        /**
+         * @brief Construct an OpenALSoundEffectAsset.
+         *
+         * @param path Path to the audio file.
+        */
+        OpenALSoundEffectAsset(const std::string& path);
+
         /**
          * @brief Construct a new OpenALSoundEffectAsset.
          * 

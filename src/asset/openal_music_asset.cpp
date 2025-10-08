@@ -8,6 +8,12 @@ namespace retronomicon::asset {
 
     /***************************** Constructor *****************************/
 
+    OpenALMusicAsset::OpenALMusicAsset(const std::string& path)
+        : OpenALMusicAsset(path, std::filesystem::path(path).filename().string())
+    {
+        // delegates to the two-parameter constructor
+    }
+
     OpenALMusicAsset::OpenALMusicAsset(const std::string& path, const std::string& name)
         : MusicAsset(path, name) {
     }

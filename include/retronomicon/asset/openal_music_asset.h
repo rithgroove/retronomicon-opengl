@@ -32,6 +32,14 @@ namespace retronomicon::asset {
         std::vector<char> m_data;
 
     public:
+
+        /**
+         * @brief Construct an OpenALMusicAsset.
+         *
+         * @param path Path to the audio file.
+        */
+        OpenALMusicAsset(const std::string& path);
+        
         /**
          * @brief Construct an OpenALMusicAsset.
          * @param path Path to the audio file.
@@ -69,10 +77,10 @@ namespace retronomicon::asset {
         inline void set_loop(bool loop) noexcept { m_loop = loop; }
 
         /** @brief Returns the OpenAL source ID. */
-        inline ALuint source() const noexcept { return m_source; }
+        inline ALuint getSource() const noexcept { return m_source; }
 
         /** @brief Returns the OpenAL buffer ID. */
-        inline ALuint buffer() const noexcept { return m_buffer; }
+        inline ALuint getBuffer() const noexcept { return m_buffer; }
     };
 
 } // namespace retronomicon::asset

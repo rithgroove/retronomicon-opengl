@@ -6,6 +6,11 @@
 
 namespace retronomicon::asset {
 
+    OpenALSoundEffectAsset::OpenALSoundEffectAsset(const std::string& path)
+        : OpenALSoundEffectAsset(path, std::filesystem::path(path).filename().string())
+    {
+        // delegates to the two-parameter constructor
+    }
     OpenALSoundEffectAsset::OpenALSoundEffectAsset(std::string path, std::string name)
         : SoundEffectAsset(std::move(path), std::move(name)) {}
 

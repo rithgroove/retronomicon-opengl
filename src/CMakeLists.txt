@@ -3,6 +3,7 @@ message(STATUS "==== Processing ${CMAKE_CURRENT_LIST_FILE} ====")
 # Add submodules inside lib/
 add_subdirectory(graphics)
 add_subdirectory(asset)
+add_subdirectory(audio)
 #add_subdirectory(input)
 
 # Define the main retronomicon engine library
@@ -13,6 +14,7 @@ target_link_libraries(retronomicon-opengl
     PUBLIC
         retronomicon-opengl-graphics
         retronomicon-opengl-asset
+        retronomicon-opengl-audio
         #retronomicon-opengl-inputs
 )
 
