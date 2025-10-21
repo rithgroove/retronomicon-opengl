@@ -5,7 +5,7 @@
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
-namespace retronomicon::opengl {
+namespace retronomicon::opengl::graphics::renderer {
 
     /**
      * @brief OpenGL-based implementation of the IRenderer interface using GLFW.

@@ -2,7 +2,7 @@
 #include <stdexcept>
 #include <iostream>
 
-namespace retronomicon::opengl {
+namespace retronomicon::opengl::graphics::renderer {
 
     OpenGLRenderer::OpenGLRenderer(const std::string& title, int width, int height)
         : m_title(title), m_width(width), m_height(height) {}
