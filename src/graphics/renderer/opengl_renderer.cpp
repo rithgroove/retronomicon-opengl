@@ -41,12 +41,27 @@ namespace retronomicon::opengl::graphics::renderer {
         std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
     }
 
-    void OpenGLRenderer::render() {
+    void OpenGLRenderer::clear() {
         if (!m_initialized) return;
 
         glClear(GL_COLOR_BUFFER_BIT);
+    }
+
+    void OpenGLRenderer::render(std::shared_ptr<Texture> texture,
+        const Vec2& position,
+        const Vec2& scale,
+        float rotation,
+        float alpha ){
+
+        if (!m_initialized) return;
+        std::cout<<"not implemented yet" << std::endl;
+    }
+
+    void OpenGLRenderer::show(){
+        if (!m_initialized) return;
         glfwSwapBuffers(m_window);
         glfwPollEvents();
+
     }
 
     void OpenGLRenderer::shutdown() {
