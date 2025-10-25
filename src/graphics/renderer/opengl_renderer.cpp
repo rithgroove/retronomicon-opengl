@@ -44,6 +44,8 @@ namespace retronomicon::opengl::graphics::renderer {
     void OpenGLRenderer::clear() {
         if (!m_initialized) return;
 
+        glViewport(0, 0, m_width, m_height);
+        glClearColor(0.1f, 0.1f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
@@ -53,6 +55,7 @@ namespace retronomicon::opengl::graphics::renderer {
         float rotation,
         float alpha ){
 
+        std::cout<<"render getting called" << std::endl;
         if (!m_initialized) return;
         std::cout<<"not implemented yet" << std::endl;
     }

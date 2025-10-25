@@ -3,8 +3,8 @@
 #include <stdexcept>
 
 namespace retronomicon::opengl::graphics{
-    OpenGLTexture::OpenGLTexture(const retronomicon::asset::ImageAsset& image)
-        : m_textureId(0), m_width(image.getWidth()), m_height(image.getHeight()) 
+    OpenGLTexture::OpenGLTexture(std::shared_ptr<ImageAsset> image)
+        : m_textureId(0), m_width(image->getWidth()), m_height(image->getHeight()) 
     {
         if (m_width <= 0 || m_height <= 0) {
             throw std::runtime_error("OpenGLTexture: invalid image dimensions");
@@ -21,7 +21,7 @@ namespace retronomicon::opengl::graphics{
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  
 
         // Figure out pixel format
-        GLint format = (image.getChannels() == 4) ? GL_RGBA : GL_RGB;
+        GLint format = (image->getChannels() == 4) ? GL_RGBA : GL_RGB;
 
         // Upload pixel data to GPU
         glTexImage2D(
@@ -33,7 +33,7 @@ namespace retronomicon::opengl::graphics{
             0,                  // border
             format,             // data format
             GL_UNSIGNED_BYTE,   // data type
-            image.getPixels().data()
+            image->getPixels().data()
         );
 
         // Optional: generate mipmaps

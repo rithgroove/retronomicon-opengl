@@ -6,9 +6,10 @@
 
 namespace retronomicon::opengl::graphics{
     using retronomicon::graphics::Texture;
+    using retronomicon::asset::ImageAsset;
     class OpenGLTexture : public Texture {
     public:
-        OpenGLTexture(const retronomicon::asset::ImageAsset& image);
+        OpenGLTexture(std::shared_ptr<ImageAsset> image);
         ~OpenGLTexture();
 
         int getWidth() const override;
