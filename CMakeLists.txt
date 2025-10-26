@@ -36,6 +36,8 @@ target_include_directories(retronomicon-opengl
         ${RETRO_OPENGL_DIR}/include
     PRIVATE
         ${RETRO_OPENGL_DIR}/external/glad/include
+        ${RETRO_OPENGL_DIR}/external/glad/include
+        ${RETRO_OPENGL_DIR}/external/glm/include
         ${RETRO_OPENGL_DIR}/external/glfw/include
         ${RETRO_OPENGL_DIR}/external/openal/include
 )
