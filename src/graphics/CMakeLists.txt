@@ -10,10 +10,12 @@ target_include_directories(
     ${RETRO_OPENGL_DIR}/include
     ${RETRO_OPENGL_DIR}/external/glfw/include
     ${RETRO_OPENGL_DIR}/external/glad/include
+    ${RETRO_OPENGL_DIR}/external/glm/include
 )
 
 target_link_libraries(retronomicon-opengl-graphics
         glad           # static glad
         glfw
+        glm
 
         )

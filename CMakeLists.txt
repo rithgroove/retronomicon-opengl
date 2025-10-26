@@ -15,6 +15,7 @@ set(RETRO_OPENGL_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include CACHE PATH "Ret
 # External libraries
 add_subdirectory(external/glad)
 add_subdirectory(external/glfw)
+add_subdirectory(external/glm)
 add_subdirectory(external/openal)
 
 # Engine source (will add retronomicon-opengl library)
@@ -24,6 +25,7 @@ target_link_libraries(retronomicon-opengl
     PRIVATE
         glad
         glfw
+        glm
         OpenAL
 )
 

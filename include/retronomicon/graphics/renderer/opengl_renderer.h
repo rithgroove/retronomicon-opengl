@@ -12,37 +12,37 @@ namespace retronomicon::opengl::graphics::renderer {
      * @brief OpenGL-based implementation of the IRenderer interface using GLFW.
      */
     class OpenGLRenderer : public retronomicon::graphics::renderer::IRenderer {
-    public:
-        OpenGLRenderer(const std::string& title, int width, int height);
-        virtual ~OpenGLRenderer();
+        public:
+            OpenGLRenderer(const std::string& title, int width, int height);
+            ~OpenGLRenderer();
 
-        /// Initialize GLFW, create window, and load GL functions.
-        void init() override;
-
-        /// Render a test background color.
-        void render(std::shared_ptr<Texture> texture,
+            void init();
+            void clear();
+            void render(std::shared_ptr<Texture> texture,
                         const Vec2& position,
                         const Vec2& scale,
                         float rotation = 0.0f,
-                        float alpha = 1.0f) override;
+                        float alpha = 1.0f);
+            void show();
+            void shutdown();
 
-        /// Clean up OpenGL/GLFW resources.
-        void shutdown() override;
+            bool shouldClose() const;
 
-        /// Check if window should close.
-        bool shouldClose() const;
+        private:
+            unsigned int compileShader(unsigned int type, const char* src);
+            unsigned int createShaderProgram(const char* vertSrc, const char* fragSrc);
 
-        void show() override;
+            std::string m_title;
+            int m_width;
+            int m_height;
 
-        void clear() override;
+            GLFWwindow* m_window = nullptr;
+            bool m_initialized = false;
 
-    private:
-        std::string m_title;
-        int m_width;
-        int m_height;
-
-        GLFWwindow* m_window = nullptr;
-        bool m_initialized = false;
+            unsigned int m_VAO = 0;
+            unsigned int m_VBO = 0;
+            unsigned int m_shaderProgram = 0;
     };
+
 
 } // namespace retronomicon::opengl
