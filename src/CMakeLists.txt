@@ -13,6 +13,7 @@ add_library(retronomicon-opengl)
 # Link subsystem libraries
 target_link_libraries(retronomicon-opengl
     PUBLIC
+        retronomicon
         retronomicon-opengl-graphics
         retronomicon-opengl-manager
         #retronomicon-opengl-asset

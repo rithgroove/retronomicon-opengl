@@ -17,5 +17,4 @@ target_link_libraries(retronomicon-opengl-graphics
         glad           # static glad
         glfw
         glm
-
         )

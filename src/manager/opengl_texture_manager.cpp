@@ -6,9 +6,7 @@ namespace retronomicon::opengl::manager{
 
 	}
 
-	OpenGLTextureManager::~OpenGLTextureManager(){
-
-	}
+	// OpenGLTextureManager::~OpenGLTextureManager()= default;
 
 	std::shared_ptr<Texture>  OpenGLTextureManager::createTexture(std::shared_ptr<ImageAsset> imageAsset){
 		return std::make_shared<OpenGLTexture>(imageAsset);

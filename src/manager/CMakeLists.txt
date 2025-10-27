@@ -13,6 +13,7 @@ target_include_directories(
 )
 
 target_link_libraries(retronomicon-opengl-manager
+        retronomicon-manager
         glad           # static glad
         glfw
         )

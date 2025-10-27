@@ -12,7 +12,7 @@ namespace retronomicon::opengl::manager{
 	class OpenGLTextureManager:public TextureManager{
 		public:
 			OpenGLTextureManager();
-			~OpenGLTextureManager();
+			// ~OpenGLTextureManager();
 			std::shared_ptr<Texture>  createTexture(std::shared_ptr<ImageAsset> ImageAsset) override;
 	};
 }
