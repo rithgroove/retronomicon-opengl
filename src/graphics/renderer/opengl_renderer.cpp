@@ -126,10 +126,8 @@ namespace retronomicon::opengl::graphics::renderer {
                                 const Vec2& scale,
                                 float rotation,
                                 float alpha) {
-        std::cout<< "test"<<std::endl;
 
         if (!m_initialized || !texture) return;
-        std::cout<< "test1"<<std::endl;
         
         auto glTex = std::dynamic_pointer_cast<retronomicon::opengl::graphics::OpenGLTexture>(texture);
         if (!glTex) {
