@@ -28,6 +28,9 @@ namespace retronomicon::opengl::graphics::renderer {
 
             bool shouldClose() const;
 
+            int getWidth() const override {return m_width;}
+            int getHeight()const override {return m_height;}
+
         private:
             unsigned int compileShader(unsigned int type, const char* src);
             unsigned int createShaderProgram(const char* vertSrc, const char* fragSrc);

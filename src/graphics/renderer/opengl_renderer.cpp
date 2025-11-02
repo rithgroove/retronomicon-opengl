@@ -122,45 +122,47 @@ namespace retronomicon::opengl::graphics::renderer {
     }
 
     void OpenGLRenderer::render(std::shared_ptr<Texture> texture,
-                                const Vec2& position,
-                                const Vec2& scale,
-                                float rotation,
-                                float alpha) {
+                            const Vec2& position,
+                            const Vec2& scale,
+                            float rotation,
+                            float alpha) {
+    if (!m_initialized || !texture) return;
 
-        if (!m_initialized || !texture) return;
-        
-        auto glTex = std::dynamic_pointer_cast<retronomicon::opengl::graphics::OpenGLTexture>(texture);
-        if (!glTex) {
-            std::cerr << "Render: Texture is not an OpenGLTexture instance!" << std::endl;
-            return;
-        }
-
-        glUseProgram(m_shaderProgram);
-
-        glm::mat4 transform = glm::mat4(1.0f);
-        transform = glm::translate(transform, glm::vec3(position.x, position.y, 0.0f));
-        transform = glm::translate(transform, glm::vec3(0.5f * scale.x, 0.5f * scale.y, 0.0f));
-        transform = glm::rotate(transform, glm::radians(rotation), glm::vec3(0.0, 0.0, 1.0));
-        transform = glm::translate(transform, glm::vec3(-0.5f * scale.x, -0.5f * scale.y, 0.0f));
-        transform = glm::scale(transform, glm::vec3(scale.x, scale.y, 1.0f));
-
-        GLint uTransformLoc = glGetUniformLocation(m_shaderProgram, "uTransform");
-        GLint uAlphaLoc = glGetUniformLocation(m_shaderProgram, "uAlpha");
-        GLint uTextureLoc = glGetUniformLocation(m_shaderProgram, "uTexture");
-
-        glUniformMatrix4fv(uTransformLoc, 1, GL_FALSE, &transform[0][0]);
-        glUniform1f(uAlphaLoc, alpha);
-        glUniform1i(uTextureLoc, 0);
-
-        glActiveTexture(GL_TEXTURE0);
-        glTex->bind();
-
-        glBindVertexArray(m_VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glBindVertexArray(0);
-
-        glTex->unbind();
+    auto glTex = std::dynamic_pointer_cast<retronomicon::opengl::graphics::OpenGLTexture>(texture);
+    if (!glTex) {
+        std::cerr << "Render: Texture is not an OpenGLTexture instance!" << std::endl;
+        return;
     }
+
+    glUseProgram(m_shaderProgram);
+
+    // --- Compute final scale: texture size * input scale
+    float texW = static_cast<float>(texture->getWidth());
+    float texH = static_cast<float>(texture->getHeight());
+
+    glm::mat4 transform = glm::mat4(1.0f);
+    transform = glm::translate(transform, glm::vec3(position.x, position.y, 0.0f));
+    transform = glm::translate(transform, glm::vec3(0.5f * texW * scale.x, 0.5f * texH * scale.y, 0.0f));
+    transform = glm::rotate(transform, glm::radians(rotation), glm::vec3(0.0, 0.0, 1.0));
+    transform = glm::translate(transform, glm::vec3(-0.5f * texW * scale.x, -0.5f * texH * scale.y, 0.0f));
+    transform = glm::scale(transform, glm::vec3(texW * scale.x, texH * scale.y, 1.0f));
+
+    GLint uTransformLoc = glGetUniformLocation(m_shaderProgram, "uTransform");
+    GLint uAlphaLoc = glGetUniformLocation(m_shaderProgram, "uAlpha");
+    GLint uTextureLoc = glGetUniformLocation(m_shaderProgram, "uTexture");
+
+    glUniformMatrix4fv(uTransformLoc, 1, GL_FALSE, &transform[0][0]);
+    glUniform1f(uAlphaLoc, alpha);
+    glUniform1i(uTextureLoc, 0);
+
+    glActiveTexture(GL_TEXTURE0);
+    glTex->bind();
+
+    glBindVertexArray(m_VAO);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+    glTex->unbind();
+}
 
     void OpenGLRenderer::show() {
         if (!m_initialized) return;
