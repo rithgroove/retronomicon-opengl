@@ -7,6 +7,14 @@ namespace retronomicon::opengl::graphics {
         public:
             using retronomicon::graphics::Color::Color; // Inherit constructors
 
+            // Explicit conversion from base Color to OpenGLColor
+            explicit OpenGLColor(const retronomicon::graphics::Color& color) noexcept {
+                // Access protected members from base class directly
+                this->m_r = color.r();
+                this->m_g = color.g();
+                this->m_b = color.b();
+                this->m_a = color.a();
+            }
             // Convert to OpenGL native float array
             const float* toNative() const noexcept {
                 return reinterpret_cast<const float*>(&m_r);
