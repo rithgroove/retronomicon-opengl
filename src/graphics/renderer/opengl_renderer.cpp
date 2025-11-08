@@ -147,10 +147,14 @@ void OpenGLRenderer::renderQuad(std::shared_ptr<Texture> texture,
 
     // --- Transform ---
     glm::mat4 transform(1.0f);
-    transform = glm::translate(transform, glm::vec3(target.getX(), target.getY(), 0.0f));
-    transform = glm::translate(transform, glm::vec3(target.getWidth() / 2.0f, target.getHeight() / 2.0f, 0.0f));
+
+    float anchorModifierX = target.getWidth()*target.getAnchor().getX();
+    float anchorModifierY = target.getHeight()*target.getAnchor().getY();
+    float centerX = target.getX();
+    float centerY = target.getY();
+    transform = glm::translate(transform, glm::vec3(centerX,  centerY,0.0f));
     transform = glm::rotate(transform, glm::radians(rotation), glm::vec3(0, 0, 1));
-    transform = glm::translate(transform, glm::vec3(-target.getWidth() / 2.0f, -target.getHeight()  / 2.0f, 0.0f));
+    transform = glm::translate(transform, glm::vec3(-anchorModifierX,  -anchorModifierY,0.0f));
     transform = glm::scale(transform, glm::vec3(target.getWidth(), target.getHeight() , 1.0f));
 
     // --- Texture UV from source rect ---
