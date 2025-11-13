@@ -24,25 +24,27 @@ public:
 
     void init() override;
     void clear() override;
+    void show() override;
+    void shutdown() override;
+
     void render(std::shared_ptr<Texture> texture,
                 const Vec2& position,
                 const Vec2& scale,
                 float rotation = 0.0f,
                 float alpha = 1.0f) override;
+
     void renderQuad(std::shared_ptr<Texture> texture,
                     const Rect& target,
                     const Rect& source,
                     float rotation = 0.0f,
                     float alpha = 1.0f,
                     const Color& color = Color::White()) override;
-    void show() override;
-    void shutdown() override;
 
-    bool shouldClose() const;
 
     int getWidth() const override { return m_width; }
     int getHeight() const override { return m_height; }
 
+    bool shouldClose() const;
 private:
     unsigned int compileShader(unsigned int type, const char* src);
     unsigned int createShaderProgram(const char* vertSrc, const char* fragSrc);
