@@ -1,6 +1,6 @@
 #include "retronomicon/input/glfw_input_map.h"
 
-namespace retronomicon::input {
+namespace retronomicon::opengl::input {
 
     void GlfwInputMap::updateFromRawInput(const GLFWRawInput& raw, InputState& state) const {
         // Check action bindings

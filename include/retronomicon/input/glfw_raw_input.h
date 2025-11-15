@@ -6,7 +6,7 @@
 #include <string>
 #include <unordered_map>
 
-namespace retronomicon::input {
+namespace retronomicon::opengl::input {
 
     class GLFWRawInput : public RawInput {
     public:

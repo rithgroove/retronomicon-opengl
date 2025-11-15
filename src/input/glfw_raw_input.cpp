@@ -1,6 +1,6 @@
 #include "retronomicon/input/glfw_raw_input.h"
 
-namespace retronomicon::input {
+namespace retronomicon::opengl::input {
 
     GLFWRawInput::GLFWRawInput(GLFWwindow* window)
         : m_window(window), m_mouseX(0.0), m_mouseY(0.0), m_mouseButtons(0) {

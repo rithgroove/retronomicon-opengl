@@ -5,7 +5,7 @@
 #include "retronomicon/input/input_state.h"
 #include <GLFW/glfw3.h>
 
-namespace retronomicon::input {
+namespace retronomicon::opengl::input {
 
     class GlfwInputMap : public InputMap {
     public:
