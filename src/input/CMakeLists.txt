@@ -9,9 +9,13 @@ target_include_directories(
     ${RETRO_DIR}/include
     ${RETRO_OPENGL_DIR}/include
     ${RETRO_OPENGL_DIR}/external/SDL2/include
+    ${RETRO_OPENGL_DIR}/external/glfw/include
     ${RETRO_OPENGL_DIR}/external/glad/include
+    ${RETRO_OPENGL_DIR}/external/glm/include
 )
 
 target_link_libraries(retronomicon-opengl-input
-        glfw           # static glfw
+        glad           # static glad
+        glfw
+        glm
         )

@@ -5,7 +5,7 @@ add_subdirectory(graphics)
 add_subdirectory(manager)
 #add_subdirectory(asset)
 #add_subdirectory(audio)
-#add_subdirectory(input)
+add_subdirectory(input)
 
 # Define the main retronomicon engine library
 add_library(retronomicon-opengl)
@@ -18,6 +18,6 @@ target_link_libraries(retronomicon-opengl
         retronomicon-opengl-manager
         #retronomicon-opengl-asset
         #retronomicon-opengl-audio
-        #retronomicon-opengl-inputs
+        retronomicon-opengl-input
 )
 

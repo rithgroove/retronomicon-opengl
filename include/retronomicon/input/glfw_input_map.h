@@ -6,8 +6,10 @@
 #include <GLFW/glfw3.h>
 
 namespace retronomicon::opengl::input {
+    using retronomicon::input::InputMap;
+    using retronomicon::input::InputState;
 
-    class GlfwInputMap : public InputMap {
+    class GLFWInputMap : public InputMap {
     public:
         using InputMap::InputMap; // inherit constructors
 

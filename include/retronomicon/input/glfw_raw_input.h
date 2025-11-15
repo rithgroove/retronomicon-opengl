@@ -7,6 +7,8 @@
 #include <unordered_map>
 
 namespace retronomicon::opengl::input {
+    
+    using retronomicon::input::RawInput;
 
     class GLFWRawInput : public RawInput {
     public:
@@ -32,4 +34,4 @@ namespace retronomicon::opengl::input {
         mutable unsigned int m_mouseButtons;
     };
 
-} // namespace retronomicon::input
+} // namespace retronomicon::opengl::input

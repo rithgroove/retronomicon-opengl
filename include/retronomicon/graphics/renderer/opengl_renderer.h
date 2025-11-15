@@ -44,6 +44,8 @@ public:
     int getWidth() const override { return m_width; }
     int getHeight() const override { return m_height; }
 
+    GLFWwindow* getWindow() {return m_window;}
+
     bool shouldClose() const;
 private:
     unsigned int compileShader(unsigned int type, const char* src);

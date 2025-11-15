@@ -2,7 +2,7 @@
 
 namespace retronomicon::opengl::input {
 
-    void GlfwInputMap::updateFromRawInput(const GLFWRawInput& raw, InputState& state) const {
+    void GLFWInputMap::updateFromRawInput(const GLFWRawInput& raw, InputState& state) const {
         // Check action bindings
         for (const auto& [key, action] : getActionBindings()) {
             if (raw.isKeyPressed(key)) {
