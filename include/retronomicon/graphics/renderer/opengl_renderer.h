@@ -8,18 +8,17 @@
 #include <GLFW/glfw3.h>
 
 namespace retronomicon::opengl::graphics::renderer {
+
 using retronomicon::graphics::Texture;
 using retronomicon::math::Vec2;
 using retronomicon::math::Rect;
 using retronomicon::graphics::Color;
 using retronomicon::opengl::graphics::OpenGLColor;
 
-/**
- * @brief OpenGL-based implementation of the IRenderer interface using GLFW.
- */
 class OpenGLRenderer : public retronomicon::graphics::renderer::IRenderer {
 public:
-    OpenGLRenderer(const std::string& title, int width, int height);
+    // NEW: renderer receives an existing GLFWwindow
+    OpenGLRenderer(GLFWwindow* window, int width, int height);
     ~OpenGLRenderer() override;
 
     void init() override;
@@ -40,18 +39,15 @@ public:
                     float alpha = 1.0f,
                     const Color& color = Color::White()) override;
 
-
     int getWidth() const override { return m_width; }
     int getHeight() const override { return m_height; }
 
-    GLFWwindow* getWindow() {return m_window;}
-
     bool shouldClose() const;
+
 private:
     unsigned int compileShader(unsigned int type, const char* src);
     unsigned int createShaderProgram(const char* vertSrc, const char* fragSrc);
 
-    std::string m_title;
     int m_width;
     int m_height;
 

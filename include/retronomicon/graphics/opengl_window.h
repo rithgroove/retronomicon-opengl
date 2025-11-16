@@ -7,59 +7,24 @@
 
 namespace retronomicon::opengl::graphics {
 
-/**
- * @brief OpenGL-capable window implementation of IWindow.
- *
- * Uses GLFW to create an OpenGL context and manage the window.
- */
 class OpenGLWindow : public retronomicon::graphics::IWindow {
-    public:
-        /**
-         * @brief Construct a new OpenGLWindow object.
-         *
-         * @param title   Title of the window.
-         * @param width   Initial width in pixels.
-         * @param height  Initial height in pixels.
-         *
-         * @throws std::runtime_error if SDL or OpenGL context creation fails.
-         */
-        OpenGLWindow(const std::string& title, int width, int height);
+public:
+    OpenGLWindow(const std::string& title, int width, int height);
+    ~OpenGLWindow() override;
 
-        /**
-         * @brief Destroy the OpenGLWindow object.
-         *
-         * Cleans up SDL and OpenGL resources.
-         */
-        ~OpenGLWindow() override;
+    bool isFullscreen() const override;
+    void toggleFullscreen() override;
+    void handleResize(int newWidth, int newHeight) override;
 
-        // ------------------------------------------------------------------------
-        // IWindow overrides
-        // ------------------------------------------------------------------------
+    void swapBuffers();
+    void pollEvents();
 
-        bool isFullscreen() const override;
-        void toggleFullscreen() override;
-        void handleResize(int newWidth, int newHeight) override;
+    GLFWwindow* getGLFWwindow() const { return m_window; }
 
-        // ------------------------------------------------------------------------
-        // Extra utilities
-        // ------------------------------------------------------------------------
-
-        /**
-         * @brief Swap the OpenGL buffers.
-         */
-        void swapBuffers();
-        
-
-        void pollEvents();
-        /**
-         * @brief Get raw GLFWwindow pointer.
-         */
-        GLFWwindow* getGLFWwindow() const { return m_window; }
-
-    private:
-        GLFWwindow* m_window = nullptr; ///< GLFW window handle.
-        int m_width;
-        int m_height;
-    };
+private:
+    GLFWwindow* m_window = nullptr;
+    int m_width = 0;
+    int m_height = 0;
+};
 
 } // namespace retronomicon::opengl::graphics
