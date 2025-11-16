@@ -52,4 +52,4 @@ namespace retronomicon::opengl::input {
         return m_mouseButtons;
     }
 
-} // namespace retronomicon::input
+} // namespace retronomicon::opengl::input
