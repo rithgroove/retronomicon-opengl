@@ -1,4 +1,5 @@
 #include "retronomicon/input/glfw_raw_input.h"
+#include "retronomicon/input/glfw_key.h"
 
 namespace retronomicon::opengl::input {
 
@@ -21,8 +22,7 @@ namespace retronomicon::opengl::input {
         if (glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS)
             m_mouseButtons |= 1 << 2;
 
-        // For simplicity: collect events as strings
-        // (real engine might wrap in a custom Event struct)
+        // Example: push some events (optional — placeholder)
         if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
             m_events.push_back("ESCAPE_PRESSED");
         }
@@ -36,8 +36,18 @@ namespace retronomicon::opengl::input {
         return m_events;
     }
 
-    bool GLFWRawInput::isKeyPressed(int keyCode) const {
-        return glfwGetKey(m_window, keyCode) == GLFW_PRESS;
+    bool GLFWRawInput::isKeyPressed(retronomicon::input::Key key) const {
+        int glfwKey = toGLFWKey(key);
+        if (glfwKey < 0)
+            return false;
+
+        // Mouse buttons
+        if (glfwKey >= GLFW_MOUSE_BUTTON_1 && glfwKey <= GLFW_MOUSE_BUTTON_8) {
+            return glfwGetMouseButton(m_window, glfwKey) == GLFW_PRESS;
+        }
+
+        // Keyboard
+        return glfwGetKey(m_window, glfwKey) == GLFW_PRESS;
     }
 
     int GLFWRawInput::getMouseX() const {

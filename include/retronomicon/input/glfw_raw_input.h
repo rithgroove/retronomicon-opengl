@@ -1,16 +1,15 @@
 #pragma once
 
 #include "retronomicon/input/raw_input.h"
+#include "retronomicon/input/key.h"
+#include "glfw_key.h"   // toGLFWKey()
 #include <GLFW/glfw3.h>
 #include <vector>
 #include <string>
-#include <unordered_map>
 
 namespace retronomicon::opengl::input {
-    
-    using retronomicon::input::RawInput;
-
-    class GLFWRawInput : public RawInput {
+    using namespace retronomicon::input;
+    class GLFWRawInput : public retronomicon::input::RawInput {
     public:
         explicit GLFWRawInput(GLFWwindow* window);
         ~GLFWRawInput() override = default;
@@ -20,7 +19,7 @@ namespace retronomicon::opengl::input {
 
         const std::vector<std::string>& getEvents() const override;
 
-        bool isKeyPressed(int keyCode) const override;
+        bool isKeyPressed(retronomicon::input::Key key) const override;
 
         int getMouseX() const override;
         int getMouseY() const override;
@@ -29,6 +28,7 @@ namespace retronomicon::opengl::input {
     private:
         GLFWwindow* m_window;
         std::vector<std::string> m_events;
+
         mutable double m_mouseX;
         mutable double m_mouseY;
         mutable unsigned int m_mouseButtons;

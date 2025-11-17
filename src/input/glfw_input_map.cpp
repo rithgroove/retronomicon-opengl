@@ -2,26 +2,30 @@
 
 namespace retronomicon::opengl::input {
 
-    void GLFWInputMap::updateFromRawInput(const GLFWRawInput& raw, InputState& state) const {
-        // Check action bindings
-        for (const auto& [key, action] : getActionBindings()) {
-            if (raw.isKeyPressed(key)) {
-                state.setAction(action, true);
-            } else {
-                state.setAction(action, false);
-            }
+    using retronomicon::input::Key;
+    using retronomicon::input::InputState;
+
+    void GLFWInputMap::updateFromRawInput(const GLFWRawInput& raw,
+                                          InputState& state) const
+    {
+        // --- Update actions ---
+        for (const auto& [key, actionName] : getActionBindings()) {
+            bool pressed = raw.isKeyPressed(key);
+            state.setAction(actionName, pressed);
         }
 
-        // Check axis bindings
-        for (const auto& [axis, bindings] : getAxisBindings()) {
-            float value = 0.0f;
+        // --- Update axes ---
+        for (const auto& [axisName, bindings] : getAxisBindings()) {
+            float value = 0.f;
+
             for (const auto& [key, weight] : bindings) {
                 if (raw.isKeyPressed(key)) {
                     value += weight;
                 }
             }
-            state.setAxis(axis, value);
+
+            state.setAxis(axisName, value);
         }
     }
 
-} // namespace retronomicon::input
+} // namespace retronomicon::opengl::input

@@ -3,20 +3,18 @@
 #include "retronomicon/input/input_map.h"
 #include "retronomicon/input/glfw_raw_input.h"
 #include "retronomicon/input/input_state.h"
-#include <GLFW/glfw3.h>
 
 namespace retronomicon::opengl::input {
-    using retronomicon::input::InputMap;
-    using retronomicon::input::InputState;
 
-    class GLFWInputMap : public InputMap {
+    class GLFWInputMap : public retronomicon::input::InputMap {
     public:
         using InputMap::InputMap; // inherit constructors
 
         /**
-         * @brief Update InputState using current RawInput (GLFW)
+         * @brief Update InputState based on current RawInput (GLFW backend)
          */
-        void updateFromRawInput(const GLFWRawInput& raw, InputState& state) const;
+        void updateFromRawInput(const GLFWRawInput& raw,
+                                retronomicon::input::InputState& state) const;
     };
 
-} // namespace retronomicon::input
+} // namespace retronomicon::opengl::input
