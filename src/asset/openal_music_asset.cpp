@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <vector>
 
-namespace retronomicon::asset {
+namespace retronomicon::opengl::asset {
 
     /***************************** Constructor *****************************/
 

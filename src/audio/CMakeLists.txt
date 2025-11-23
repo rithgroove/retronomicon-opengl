@@ -12,6 +12,7 @@ target_include_directories(
 )
 
 target_link_libraries(retronomicon-opengl-audio
+        retronomicon
         glfw           # static glfw
         OpenAL
         )

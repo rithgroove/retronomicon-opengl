@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <cstring>
 
-namespace retronomicon::asset {
+namespace retronomicon::opengl::asset {
 
     OpenALSoundEffectAsset::OpenALSoundEffectAsset(const std::string& path)
         : OpenALSoundEffectAsset(path, std::filesystem::path(path).filename().string())

@@ -1,16 +1,16 @@
 #pragma once
 
 #include "retronomicon/asset/sound_effect_asset.h"
-#include "retronomicon/core/math/math_utils.h"
+#include "retronomicon/math/math_utils.h"
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <string>
 #include <vector>
 #include <iostream>
 
-namespace retronomicon::asset {
-
-    using retronomicon::core::math::clamp;
+namespace retronomicon::opengl::asset {
+    using namespace retronomicon::asset;
+    using retronomicon::math::clamp;
     /**
      * @brief SoundEffectAsset implementation using OpenAL.
      * 

@@ -6,7 +6,8 @@
 #include <string>
 #include <vector>
 
-namespace retronomicon::asset {
+namespace retronomicon::opengl::asset {
+    using namespace retronomicon::asset;
 
     /**
      * @brief Implementation of MusicAsset using OpenAL.

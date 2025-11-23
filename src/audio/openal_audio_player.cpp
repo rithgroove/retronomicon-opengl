@@ -1,9 +1,11 @@
 #include "retronomicon/audio/openal_audio_player.h"
-#include "retronomicon/core/math/math_utils.h"
+#include "retronomicon/math/math_utils.h"
 #include <iostream>
 
-namespace retronomicon::audio {
-    using retronomicon::core::math::clamp;
+namespace retronomicon::opengl::audio {
+
+    using retronomicon::math::clamp;
+
     OpenALAudioPlayer::OpenALAudioPlayer() = default;
 
     OpenALAudioPlayer::~OpenALAudioPlayer() {
@@ -19,16 +21,16 @@ namespace retronomicon::audio {
 
         m_context = alcCreateContext(m_device, nullptr);
         if (!m_context || !alcMakeContextCurrent(m_context)) {
-            std::cerr << "[OpenAL] Failed to create or make context current\n";
+            std::cerr << "[OpenAL] Failed to create or activate context\n";
             if (m_context) alcDestroyContext(m_context);
             alcCloseDevice(m_device);
             return false;
         }
 
         alGenSources(1, &m_musicSource);
-        if (checkALError("alGenSources for music")) return false;
+        if (checkALError("alGenSources (music)")) return false;
 
-        std::cout << "[OpenAL] Initialized successfully\n";
+        std::cout << "[OpenAL] Audio system initialized\n";
         return true;
     }
 
@@ -49,16 +51,17 @@ namespace retronomicon::audio {
             alcDestroyContext(m_context);
             m_context = nullptr;
         }
+
         if (m_device) {
             alcCloseDevice(m_device);
             m_device = nullptr;
         }
+
         std::cout << "[OpenAL] Shutdown complete\n";
     }
 
     void OpenALAudioPlayer::update() {
-        // For streaming or fade logic
-        // TODO: Implement streaming buffer refill for long music tracks
+        // for music streaming / fades
     }
 
     /************************ GLOBAL ************************/
@@ -74,14 +77,15 @@ namespace retronomicon::audio {
 
     void OpenALAudioPlayer::applyGlobalVolume() {
         alSourcef(m_musicSource, AL_GAIN, m_masterVolume * m_musicVolume);
-        for (auto& [name, instance] : m_sfxCache) {
-            alSourcef(instance.source, AL_GAIN, m_masterVolume * m_sfxVolume);
+
+        for (auto& [_, inst] : m_sfxCache) {
+            alSourcef(inst.source, AL_GAIN, m_masterVolume * m_sfxVolume);
         }
     }
 
     /************************ MUSIC ************************/
 
-    void OpenALAudioPlayer::playMusic(const std::string& path, bool loop, int /*fadeInMs*/) {
+    void OpenALAudioPlayer::playMusic(const std::string& path, bool loop, int) {
         m_currentMusic = std::make_unique<OpenALMusicAsset>(path);
         if (!m_currentMusic->load()) {
             std::cerr << "[OpenAL] Failed to load music: " << path << "\n";
@@ -94,15 +98,12 @@ namespace retronomicon::audio {
         alSourcePlay(m_musicSource);
     }
 
-    void OpenALAudioPlayer::stopMusic(int /*fadeOutMs*/) {
+    void OpenALAudioPlayer::stopMusic(int) {
         alSourceStop(m_musicSource);
     }
 
     void OpenALAudioPlayer::setMusicPaused(bool paused) {
-        if (paused)
-            alSourcePause(m_musicSource);
-        else
-            alSourcePlay(m_musicSource);
+        paused ? alSourcePause(m_musicSource) : alSourcePlay(m_musicSource);
     }
 
     bool OpenALAudioPlayer::isMusicPlaying() const {
@@ -120,7 +121,7 @@ namespace retronomicon::audio {
         return m_musicVolume;
     }
 
-    /************************ SFX ************************/
+    /************************ SOUND EFFECTS ************************/
 
     bool OpenALAudioPlayer::loadSoundEffect(const std::string& name, const std::string& path) {
         if (m_sfxCache.find(name) != m_sfxCache.end()) return true;
@@ -131,13 +132,14 @@ namespace retronomicon::audio {
             return false;
         }
 
-        SoundInstance instance;
-        instance.buffer = asset.getBuffer();
-        alGenSources(1, &instance.source);
-        alSourcei(instance.source, AL_BUFFER, instance.buffer);
-        alSourcef(instance.source, AL_GAIN, m_masterVolume * m_sfxVolume);
+        SoundInstance inst;
+        inst.buffer = asset.getBuffer();
 
-        m_sfxCache[name] = instance;
+        alGenSources(1, &inst.source);
+        alSourcei(inst.source, AL_BUFFER, inst.buffer);
+        alSourcef(inst.source, AL_GAIN, m_masterVolume * m_sfxVolume);
+
+        m_sfxCache[name] = inst;
         return true;
     }
 
@@ -149,6 +151,7 @@ namespace retronomicon::audio {
         }
 
         ALuint src = it->second.source;
+
         alSourcef(src, AL_GAIN, m_masterVolume * m_sfxVolume * volume);
         alSourcei(src, AL_LOOPING, loop ? AL_TRUE : AL_FALSE);
         alSourcePlay(src);
@@ -156,12 +159,14 @@ namespace retronomicon::audio {
 
     void OpenALAudioPlayer::stopSoundEffect(const std::string& name) {
         if (name.empty()) {
-            for (auto& [n, instance] : m_sfxCache)
-                alSourceStop(instance.source);
-        } else {
-            auto it = m_sfxCache.find(name);
-            if (it != m_sfxCache.end()) alSourceStop(it->second.source);
+            for (auto& [_, inst] : m_sfxCache)
+                alSourceStop(inst.source);
+            return;
         }
+
+        auto it = m_sfxCache.find(name);
+        if (it != m_sfxCache.end())
+            alSourceStop(it->second.source);
     }
 
     void OpenALAudioPlayer::setSfxVolume(float volume) {
@@ -183,28 +188,11 @@ namespace retronomicon::audio {
     }
 
     void OpenALAudioPlayer::clearSoundCache() {
-        for (auto& [name, instance] : m_sfxCache) {
-            alDeleteSources(1, &instance.source);
-            alDeleteBuffers(1, &instance.buffer);
+        for (auto& [_, inst] : m_sfxCache) {
+            alDeleteSources(1, &inst.source);
+            alDeleteBuffers(1, &inst.buffer);
         }
         m_sfxCache.clear();
-    }
-
-    /************************ 3D AUDIO ************************/
-
-    void OpenALAudioPlayer::setListenerPosition(const Vec3& pos) {
-        alListener3f(AL_POSITION, pos.x, pos.y, pos.z);
-    }
-
-    void OpenALAudioPlayer::playSoundEffect3D(const std::string& name, const Vec3& pos, float volume, bool loop) {
-        auto it = m_sfxCache.find(name);
-        if (it == m_sfxCache.end()) return;
-
-        ALuint src = it->second.source;
-        alSource3f(src, AL_POSITION, pos.x, pos.y, pos.z);
-        alSourcef(src, AL_GAIN, m_masterVolume * m_sfxVolume * volume);
-        alSourcei(src, AL_LOOPING, loop ? AL_TRUE : AL_FALSE);
-        alSourcePlay(src);
     }
 
     /************************ INTERNAL ************************/
@@ -218,4 +206,4 @@ namespace retronomicon::audio {
         return false;
     }
 
-} // namespace retronomicon::audio
+} // namespace retronomicon::opengl::audio

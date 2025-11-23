@@ -14,6 +14,7 @@ target_include_directories(
 )
 
 target_link_libraries(retronomicon-opengl-asset
+        retronomicon
         glfw           # static glfw
         OpenAL
         )

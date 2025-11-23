@@ -3,17 +3,19 @@
 #include "retronomicon/audio/i_audio_player.h"
 #include "retronomicon/asset/openal_sound_effect_asset.h"
 #include "retronomicon/asset/openal_music_asset.h"
+
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <unordered_map>
 #include <string>
 #include <memory>
 
-namespace retronomicon::audio {
+namespace retronomicon::opengl::audio {
 
-    using retronomicon::asset::OpenALMusicAsset;
-    using retronomicon::asset::OpenALSoundEffectAsset;
-    class OpenALAudioPlayer final : public IAudioPlayer {
+    using retronomicon::opengl::asset::OpenALMusicAsset;
+    using retronomicon::opengl::asset::OpenALSoundEffectAsset;
+
+    class OpenALAudioPlayer : public retronomicon::audio::IAudioPlayer {
     public:
         OpenALAudioPlayer();
         ~OpenALAudioPlayer() override;
@@ -43,16 +45,12 @@ namespace retronomicon::audio {
         void unloadSoundEffect(const std::string& name) override;
         void clearSoundCache() override;
 
-        /************** 3D Audio (Optional) **************/
-        void setListenerPosition(const Vec3& pos) override;
-        void playSoundEffect3D(const std::string& name, const Vec3& pos, float volume = 1.0f, bool loop = false) override;
-
     private:
         // OpenAL handles
         ALCdevice* m_device = nullptr;
         ALCcontext* m_context = nullptr;
 
-        // Cached buffers and sources for SFX
+        // Cached SFX
         struct SoundInstance {
             ALuint buffer = 0;
             ALuint source = 0;
@@ -63,14 +61,13 @@ namespace retronomicon::audio {
         std::unique_ptr<OpenALMusicAsset> m_currentMusic;
         ALuint m_musicSource = 0;
 
-        // Volume controls
+        // Volume
         float m_masterVolume = 1.0f;
-        float m_musicVolume = 1.0f;
-        float m_sfxVolume = 1.0f;
+        float m_musicVolume  = 1.0f;
+        float m_sfxVolume    = 1.0f;
 
-        // Internal helpers
         void applyGlobalVolume();
         bool checkALError(const std::string& context);
     };
 
-} // namespace retronomicon::audio
+} // namespace retronomicon::opengl::audio
