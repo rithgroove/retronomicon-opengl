@@ -7,6 +7,7 @@ add_library(retronomicon-opengl-asset OBJECT ${OPENGL_ASSET_PLUGIN})
 target_include_directories(
     retronomicon-opengl-asset PUBLIC
     ${RETRO_DIR}/include
+    ${RETRO_DIR}/external/stb
     ${RETRO_OPENGL_DIR}/include
     ${RETRO_OPENGL_DIR}/external/glad/include
     ${RETRO_OPENGL_DIR}/external/gflw/include

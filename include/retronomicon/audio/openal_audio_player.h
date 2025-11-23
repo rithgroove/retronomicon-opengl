@@ -15,20 +15,30 @@ namespace retronomicon::opengl::audio {
     using retronomicon::opengl::asset::OpenALMusicAsset;
     using retronomicon::opengl::asset::OpenALSoundEffectAsset;
 
+    /**
+     * @brief OpenAL backend implementing the IAudioPlayer interface.
+     *
+     * Handles:
+     *   ✔ music playback (single streaming/static buffer)
+     *   ✔ SFX playback (cached buffers/sources)
+     *   ✔ global volume
+     *   ✔ optional 3D audio (listener + sound positions)
+     */
     class OpenALAudioPlayer : public retronomicon::audio::IAudioPlayer {
     public:
         OpenALAudioPlayer();
         ~OpenALAudioPlayer() override;
 
+        /***************************** Initialization *****************************/
         bool init() override;
         void shutdown() override;
-        void update() override;
 
-        /************** Global **************/
+        /***************************** Global *****************************/
+        void update() override;
         void setMasterVolume(float volume) override;
         float getMasterVolume() const override;
 
-        /************** Music **************/
+        /***************************** Music *****************************/
         void playMusic(const std::string& path, bool loop = true, int fadeInMs = 0) override;
         void stopMusic(int fadeOutMs = 0) override;
         void setMusicPaused(bool paused) override;
@@ -36,7 +46,7 @@ namespace retronomicon::opengl::audio {
         void setMusicVolume(float volume) override;
         float getMusicVolume() const override;
 
-        /************** Sound Effects **************/
+        /***************************** Sound Effects *****************************/
         bool loadSoundEffect(const std::string& name, const std::string& path) override;
         void playSoundEffect(const std::string& name, float volume = 1.0f, bool loop = false) override;
         void stopSoundEffect(const std::string& name = "") override;
@@ -45,27 +55,36 @@ namespace retronomicon::opengl::audio {
         void unloadSoundEffect(const std::string& name) override;
         void clearSoundCache() override;
 
+        /***************************** 3D Audio (optional) *****************************/
+        void setListenerPosition(const retronomicon::audio::Vec3& pos) override;
+        void playSoundEffect3D(const std::string& name,
+                               const retronomicon::audio::Vec3& pos,
+                               float volume = 1.0f,
+                               bool loop = false) override;
+
     private:
-        // OpenAL handles
-        ALCdevice* m_device = nullptr;
+        /***************************** OpenAL Context *****************************/
+        ALCdevice*  m_device  = nullptr;
         ALCcontext* m_context = nullptr;
 
-        // Cached SFX
+        /***************************** SFX Cache *****************************/
         struct SoundInstance {
-            ALuint buffer = 0;
-            ALuint source = 0;
+            ALuint buffer = 0;   // OpenAL buffer
+            ALuint source = 0;   // OpenAL source
         };
+
         std::unordered_map<std::string, SoundInstance> m_sfxCache;
 
-        // Music
+        /***************************** Music *****************************/
         std::unique_ptr<OpenALMusicAsset> m_currentMusic;
         ALuint m_musicSource = 0;
 
-        // Volume
+        /***************************** Volume *****************************/
         float m_masterVolume = 1.0f;
         float m_musicVolume  = 1.0f;
         float m_sfxVolume    = 1.0f;
 
+        /***************************** Internal Helpers *****************************/
         void applyGlobalVolume();
         bool checkALError(const std::string& context);
     };

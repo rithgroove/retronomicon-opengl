@@ -1,118 +1,69 @@
 #pragma once
 
 #include "retronomicon/asset/sound_effect_asset.h"
-#include "retronomicon/math/math_utils.h"
-#include <AL/al.h>
-#include <AL/alc.h>
 #include <string>
 #include <vector>
 #include <iostream>
+#include <AL/al.h>
 
 namespace retronomicon::opengl::asset {
-    using namespace retronomicon::asset;
-    using retronomicon::math::clamp;
+
     /**
-     * @brief SoundEffectAsset implementation using OpenAL.
-     * 
-     * Represents a short sound effect (SFX) loaded into an OpenAL buffer and played via a source.
-     * Intended for UI clicks, footsteps, etc.
+     * @brief A sound effect asset that ONLY decodes audio data (WAV/OGG)
+     *        and does NOT create any OpenAL buffers or sources.
+     *
+     * The OpenALAudioPlayer owns OpenAL buffers/sources.
      */
-    class OpenALSoundEffectAsset final : public SoundEffectAsset {
+    class OpenALSoundEffectAsset final : public retronomicon::asset::SoundEffectAsset {
     public:
 
         /**
-         * @brief Construct an OpenALSoundEffectAsset.
-         *
-         * @param path Path to the audio file.
-        */
+         * @brief Construct a decoder-only sound effect asset.
+         * @param path Path to audio file.
+         */
         OpenALSoundEffectAsset(const std::string& path);
 
         /**
-         * @brief Construct a new OpenALSoundEffectAsset.
-         * 
-         * @param path The file path to the sound effect.
-         * @param name The display name of this asset.
+         * @brief Construct with explicit path + asset name.
          */
         OpenALSoundEffectAsset(std::string path, std::string name);
 
         /**
-         * @brief Destroy the OpenALSoundEffectAsset and free OpenAL resources.
+         * @brief Destructor — no OpenAL cleanup because we no longer own AL objects.
          */
-        ~OpenALSoundEffectAsset() override;
+        ~OpenALSoundEffectAsset() override = default;
 
         /**
-         * @brief Load the sound effect from file into an OpenAL buffer.
-         * 
-         * @return true if successfully loaded, false otherwise.
+         * @brief Decode WAV or OGG audio data into PCM memory.
+         *
+         * OpenALAudioPlayer will upload this PCM data into an AL buffer.
+         *
+         * @param outData  The returned PCM audio bytes.
+         * @param outFmt   The OpenAL format (AL_FORMAT_MONO16, etc.)
+         * @param outFreq  Sampling rate
+         * @return true if decoding succeeded.
          */
-        bool load() override;
+        bool decode(std::vector<char>& outData, ALenum& outFmt, ALsizei& outFreq);
 
         /**
-         * @brief Unload and delete the OpenAL buffer/source.
+         * @brief Dummy overrides (no OpenAL source/buffer anymore).
          */
-        void unload() override;
-
-        /**
-         * @brief Play the sound effect.
-         * 
-         * @param loop Whether to loop playback (default: false).
-         */
-        void play(bool loop = false) override;
-
-        /**
-         * @brief Stop the sound effect if playing.
-         */
-        void stop() override;
-
-        /***************************** Inline Getter/Setter *****************************/
-
-        /**
-         * @brief Set the playback volume (gain).
-         * @param volume Volume between 0.0f (silent) and 1.0f (full).
-         */
-        inline void setVolume(float volume) {
-            m_volume = clamp(volume, 0.0f, 1.0f);
-            if (m_source)
-                alSourcef(m_source, AL_GAIN, m_volume);
-        }
-        
-        /**
-         * @brief Get the current playback volume.
-         */
-        inline float getVolume() const { return m_volume; }
-
-        /**
-         * @brief Check whether the sound is currently playing.
-         */
-        inline bool isPlaying() const { return m_playing; }
-
-        /**
-         * @brief Get the OpenAL source handle.
-         */
-        inline ALuint getSource() const { return m_source; }
-
-        /**
-         * @brief Get the OpenAL buffer handle.
-         */
-        inline ALuint getBuffer() const { return m_buffer; }
+        bool load() override { return true; }
+        void unload() override {}
+        void play(bool loop = false) override {}
+        void stop() override {}
 
     private:
-        /**
-         * @brief Load WAV data manually (very minimal parser for PCM WAV).
-         * 
-         * @param path Path to file
-         * @param data Out buffer for audio data
-         * @param format Out AL format
-         * @param freq Out frequency
-         * @return true if loaded, false otherwise.
-         */
-        bool loadWavFile(const std::string& path, std::vector<char>& data, ALenum& format, ALsizei& freq);
+        // Internal decoders
+        bool loadWavFile(const std::string& path,
+                         std::vector<char>& data,
+                         ALenum& format,
+                         ALsizei& freq);
 
-    private:
-        ALuint m_buffer = 0;   ///< OpenAL buffer ID
-        ALuint m_source = 0;   ///< OpenAL source ID
-        bool m_playing = false;///< Whether currently playing
-        float m_volume = 1.0f; ///< Volume (0.0 - 1.0)
+        bool loadOggFile(const std::string& path,
+                         std::vector<char>& data,
+                         ALenum& format,
+                         ALsizei& freq);
     };
 
-} // namespace retronomicon::asset
+} // namespace retronomicon::opengl::asset
