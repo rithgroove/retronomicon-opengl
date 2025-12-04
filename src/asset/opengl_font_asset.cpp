@@ -1,20 +1,18 @@
 #include "retronomicon/asset/opengl_font_asset.h"
-#include <iostream> // temp logging
+#include <iostream>
 
 namespace retronomicon::opengl::asset {
 
 bool OpenGLFontAsset::load() {
     if (m_isLoaded) return true;
 
-    // Step 1: load glyph metrics (with stb_truetype or FreeType)
     if (!loadGlyphs()) {
-        std::cerr << "Failed to load glyph metrics for font: " << m_path << "\n";
+        std::cerr << "[OpenGLFontAsset] Failed to load glyph metrics.\n";
         return false;
     }
 
-    // Step 2: build texture atlas
     if (!buildAtlas()) {
-        std::cerr << "Failed to build texture atlas for font: " << m_path << "\n";
+        std::cerr << "[OpenGLFontAsset] Failed to build glyph atlas.\n";
         return false;
     }
 
@@ -24,41 +22,74 @@ bool OpenGLFontAsset::load() {
 
 void OpenGLFontAsset::unload() {
     if (!m_isLoaded) return;
-    if (m_textureAtlas) {
-        // m_textureAtlas->destroy();
-        m_textureAtlas.reset();
-    }
+
+    m_pixels.clear();
+    m_pixels.shrink_to_fit();
+    m_atlasWidth = 0;
+    m_atlasHeight = 0;
+
+    m_glyphs.clear();
+
     m_isLoaded = false;
 }
 
-bool OpenGLFontAsset::loadGlyphs() {
-    // Placeholder — backend decision: FreeType or stb_truetype.
-    // This function should:
-    // 1. load font file
-    // 2. rasterize glyphs or gather metrics
-    // 3. store metrics into m_glyphs[char]
+std::string OpenGLFontAsset::to_string() const {
+    return "OpenGLFontAsset(name=" + m_name +
+           ", path=" + m_path +
+           ", pointSize=" + std::to_string(m_pointSize) +
+           ", atlas=" + std::to_string(m_atlasWidth) + "x" +
+                        std::to_string(m_atlasHeight) +
+           ")";
+}
 
-    // For now, stub returns true so the engine compiles.
+bool OpenGLFontAsset::loadGlyphs() {
+    // ********** STUB **********
+    // Will be replaced by stb_truetype integration.
+    // This stub creates dummy glyphs so the engine runs.
+
+    for (char c = 32; c < 127; c++) {
+        GlyphMetrics gm;
+        gm.width    = 16;
+        gm.height   = 16;
+        gm.advanceX = 16;
+        gm.bearingX = 0;
+        gm.bearingY = 16;
+        m_glyphs[c] = gm;
+    }
+
     return true;
 }
 
 bool OpenGLFontAsset::buildAtlas() {
-    // Placeholder: dummy 32x32 white texture
-    int atlasWidth = 32;
-    int atlasHeight = 32;
+    // ********** STUB **********
+    // Generates a dummy 256x256 white atlas.
+    m_atlasWidth = 256;
+    m_atlasHeight = 256;
+
     int channels = 4;
+    m_pixels.resize(m_atlasWidth * m_atlasHeight * channels, 255);
 
-    std::vector<uint8_t> pixels(atlasWidth * atlasHeight * channels, 255);
+    // Put glyphs into grid layout for now
+    int cellSize = 16;
+    int cols = m_atlasWidth / cellSize;
 
-    m_textureAtlas = std::make_shared<retronomicon::opengl::graphics::OpenGLTexture>(
-        pixels.data(),
-        atlasWidth,
-        atlasHeight,
-        channels
-    );
+    int i = 0;
+    for (auto& [c, gm] : m_glyphs) {
+        int cx = (i % cols) * cellSize;
+        int cy = (i / cols) * cellSize;
+
+        gm.atlasX = cx;
+        gm.atlasY = cy;
+
+        gm.u0 = float(cx) / m_atlasWidth;
+        gm.v0 = float(cy) / m_atlasHeight;
+        gm.u1 = float(cx + gm.width) / m_atlasWidth;
+        gm.v1 = float(cy + gm.height) / m_atlasHeight;
+
+        i++;
+    }
 
     return true;
 }
 
-
-} // namespace retronomicon::asset
+} // namespace retronomicon::opengl::asset

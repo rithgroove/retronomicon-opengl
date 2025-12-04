@@ -1,17 +1,14 @@
 #pragma once
 
+#include <vector>
 #include <memory>
+#include <string>
+
 #include "retronomicon/asset/font_asset.h"
-#include "retronomicon/graphics/opengl_texture.h"
 
 namespace retronomicon::opengl::asset {
-    using retronomicon::asset::FontAsset;
-    using retronomicon::opengl::graphics::OpenGLTexture;
-    /**
-     * @brief OpenGL-specific implementation of a FontAsset.
-     *        Uses a texture atlas for glyph rendering.
-     */
-    class OpenGLFontAsset : public FontAsset {
+
+    class OpenGLFontAsset : public retronomicon::asset::FontAsset {
     public:
         explicit OpenGLFontAsset(const std::string& path, int pointSize)
             : FontAsset(path, pointSize) {}
@@ -21,32 +18,37 @@ namespace retronomicon::opengl::asset {
                         int pointSize)
             : FontAsset(path, name, pointSize) {}
 
-        virtual ~OpenGLFontAsset() {
+        ~OpenGLFontAsset() override {
             unload();
         }
 
-        /***************************** Load / Unload *****************************/
+        // --------------------------------------------------------
+        // Backend loading
+        // --------------------------------------------------------
         bool load() override;
         void unload() override;
         bool isLoaded() const noexcept override { return m_isLoaded; }
 
-        /***************************** Getters *****************************/
-        std::shared_ptr<OpenGLTexture> getTextureAtlas() const noexcept {
-            return m_textureAtlas;
-        }
+        // --------------------------------------------------------
+        // Accessors (used by OpenGLTextureManager)
+        // --------------------------------------------------------
+        const std::vector<uint8_t>& getAtlasPixels() const noexcept { return m_pixels; }
+        int getAtlasWidth() const noexcept { return m_atlasWidth; }
+        int getAtlasHeight() const noexcept { return m_atlasHeight; }
 
-        std::string to_string() const override {
-            return "OpenGLFontAsset(name=" + m_name +
-                   ", path=" + m_path +
-                   ", size=" + std::to_string(m_pointSize) + ")";
-        }
+        std::string to_string() const override;
 
     private:
         bool m_isLoaded = false;
-        std::shared_ptr<OpenGLTexture> m_textureAtlas;
 
-        bool buildAtlas();     // internal rasterization + texture build
-        bool loadGlyphs();     // call FreeType/stb to populate m_glyphs
+        // Atlas data
+        std::vector<uint8_t> m_pixels;  // RGBA
+        int m_atlasWidth = 0;
+        int m_atlasHeight = 0;
+
+        // Internal steps
+        bool loadGlyphs();  // fill m_glyphs + raw bitmaps
+        bool buildAtlas();  // pack bitmaps into m_pixels
     };
 
-} // namespace retronomicon::asset
+} // namespace retronomicon::opengl::asset

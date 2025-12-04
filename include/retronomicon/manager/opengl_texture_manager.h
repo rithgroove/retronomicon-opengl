@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <iostream>
 #include "retronomicon/graphics/texture.h"
 #include "retronomicon/manager/texture_manager.h"
 #include "retronomicon/asset/image_asset.h"
