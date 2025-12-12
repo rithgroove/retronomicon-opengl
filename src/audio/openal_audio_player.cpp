@@ -14,8 +14,16 @@ namespace retronomicon::opengl::audio {
      * Constructor / Destructor
      **************************************************************************/
 
+    /**
+     * @brief Construct the audio player without initializing OpenAL yet.
+     *
+     * `init()` must be called before any audio playback occurs.
+     */
     OpenALAudioPlayer::OpenALAudioPlayer() = default;
 
+    /**
+     * @brief Destructor ensures OpenAL is properly shut down.
+     */
     OpenALAudioPlayer::~OpenALAudioPlayer() {
         shutdown();
     }
@@ -24,6 +32,17 @@ namespace retronomicon::opengl::audio {
      * Initialization
      **************************************************************************/
 
+    /**
+     * @brief Initialize the OpenAL device, context, and music source.
+     *
+     * @return True on success, false if initialization failed.
+     *
+     * Steps:
+     *  - Opens the default device
+     *  - Creates the OpenAL audio context
+     *  - Makes the context current
+     *  - Allocates a source dedicated to music playback
+     */
     bool OpenALAudioPlayer::init() {
         m_device = alcOpenDevice(nullptr);
         if (!m_device) {
@@ -52,17 +71,17 @@ namespace retronomicon::opengl::audio {
      * Shutdown
      **************************************************************************/
 
+    /**
+     * @brief Shutdown OpenAL, clear buffers, and release audio resources.
+     */
     void OpenALAudioPlayer::shutdown() {
-        // Clear SFX
         clearSoundCache();
 
-        // Delete music source
         if (m_musicSource) {
             alDeleteSources(1, &m_musicSource);
             m_musicSource = 0;
         }
 
-        // Destroy context/device
         if (m_context) {
             alcMakeContextCurrent(nullptr);
             alcDestroyContext(m_context);
@@ -78,33 +97,41 @@ namespace retronomicon::opengl::audio {
     }
 
     /**************************************************************************
-     * Update
+     * Update (future expansion)
      **************************************************************************/
 
+    /**
+     * @brief Per-frame update hook.
+     *
+     * Currently unused, but reserved for:
+     *  - streaming music buffers,
+     *  - fade-in/fade-out logic,
+     *  - dynamic reverb environments.
+     */
     void OpenALAudioPlayer::update() {
-        // Future:
-        // - streaming music
-        // - fade in/out
+        // Placeholder for future streaming/fading features
     }
 
     /**************************************************************************
      * Global Volume
      **************************************************************************/
 
+    /**
+     * @brief Set the engine-wide master volume [0..1].
+     *
+     * Applies to both music and SFX.
+     */
     void OpenALAudioPlayer::setMasterVolume(float volume) {
         m_masterVolume = clamp(volume, 0.0f, 1.0f);
         applyGlobalVolume();
     }
 
-    float OpenALAudioPlayer::getMasterVolume() const {
-        return m_masterVolume;
-    }
-
+    /**
+     * @brief Apply master/music/SFX volume to all OpenAL sources.
+     */
     void OpenALAudioPlayer::applyGlobalVolume() {
-        // Apply to music
         alSourcef(m_musicSource, AL_GAIN, m_masterVolume * m_musicVolume);
 
-        // Apply to SFX
         for (auto& [_, inst] : m_sfxCache) {
             alSourcef(inst.source, AL_GAIN, m_masterVolume * m_sfxVolume);
         }
@@ -114,6 +141,12 @@ namespace retronomicon::opengl::audio {
      * Music Control
      **************************************************************************/
 
+    /**
+     * @brief Load and begin playing music from a file.
+     *
+     * @param path Path to the audio file.
+     * @param loop Whether the music should loop.
+     */
     void OpenALAudioPlayer::playMusic(const std::string& path, bool loop, int) {
         m_currentMusic = std::make_unique<OpenALMusicAsset>(path);
 
@@ -130,10 +163,16 @@ namespace retronomicon::opengl::audio {
         alSourcePlay(m_musicSource);
     }
 
+    /**
+     * @brief Stop the currently playing music.
+     */
     void OpenALAudioPlayer::stopMusic(int) {
         alSourceStop(m_musicSource);
     }
 
+    /**
+     * @brief Pause or resume music playback.
+     */
     void OpenALAudioPlayer::setMusicPaused(bool paused) {
         if (paused)
             alSourcePause(m_musicSource);
@@ -141,31 +180,30 @@ namespace retronomicon::opengl::audio {
             alSourcePlay(m_musicSource);
     }
 
+    /**
+     * @brief Check if music is actively playing.
+     */
     bool OpenALAudioPlayer::isMusicPlaying() const {
         ALint state;
         alGetSourcei(m_musicSource, AL_SOURCE_STATE, &state);
         return (state == AL_PLAYING);
     }
 
-    void OpenALAudioPlayer::setMusicVolume(float volume) {
-        m_musicVolume = clamp(volume, 0.0f, 1.0f);
-        alSourcef(m_musicSource, AL_GAIN, m_masterVolume * m_musicVolume);
-    }
-
-    float OpenALAudioPlayer::getMusicVolume() const {
-        return m_musicVolume;
-    }
-
     /**************************************************************************
      * Sound Effect Loading
      **************************************************************************/
 
+    /**
+     * @brief Load and cache a sound effect from file.
+     *
+     * Loads PCM data, creates an OpenAL buffer+source, and stores it in m_sfxCache.
+     *
+     * @return True on success.
+     */
     bool OpenALAudioPlayer::loadSoundEffect(const std::string& name, const std::string& path) {
-        // Already cached?
         if (m_sfxCache.find(name) != m_sfxCache.end())
-            return true;
+            return true; // Already cached
 
-        // Use decoder-only asset
         OpenALSoundEffectAsset decoder(path);
 
         std::vector<char> pcm;
@@ -179,11 +217,9 @@ namespace retronomicon::opengl::audio {
 
         SoundInstance inst;
 
-        // Generate AL buffer
         alGenBuffers(1, &inst.buffer);
         alBufferData(inst.buffer, format, pcm.data(), pcm.size(), freq);
 
-        // Generate AL source
         alGenSources(1, &inst.source);
         alSourcei(inst.source, AL_BUFFER, inst.buffer);
         alSourcef(inst.source, AL_GAIN, m_masterVolume * m_sfxVolume);
@@ -196,9 +232,15 @@ namespace retronomicon::opengl::audio {
      * Sound Effect Playback
      **************************************************************************/
 
+    /**
+     * @brief Play a previously loaded sound effect.
+     *
+     * @param name Identifier given during `loadSoundEffect()`.
+     * @param volume Additional volume multiplier.
+     * @param loop Whether the SFX should loop.
+     */
     void OpenALAudioPlayer::playSoundEffect(const std::string& name, float volume, bool loop) {
 
-        std::cout<< "[OpenAL] playSoundEffect: " <<name << std::endl;
         auto it = m_sfxCache.find(name);
         if (it == m_sfxCache.end()) {
             std::cerr << "[OpenAL] Unknown SFX: " << name << "\n";
@@ -207,15 +249,14 @@ namespace retronomicon::opengl::audio {
 
         ALuint src = it->second.source;
 
-
-        std::cout<< "[OpenAL] playSoundEffect2: " <<name << std::endl;
         alSourcef(src, AL_GAIN, m_masterVolume * m_sfxVolume * volume);
         alSourcei(src, AL_LOOPING, loop ? AL_TRUE : AL_FALSE);
         alSourcePlay(src);
-
-        std::cout<< "[OpenAL] playSoundEffect3: " <<name << std::endl;
     }
 
+    /**
+     * @brief Stop a single SFX, or all SFX if name is empty.
+     */
     void OpenALAudioPlayer::stopSoundEffect(const std::string& name) {
         if (name.empty()) {
             for (auto& [_, inst] : m_sfxCache)
@@ -228,15 +269,22 @@ namespace retronomicon::opengl::audio {
             alSourceStop(it->second.source);
     }
 
+    /**************************************************************************
+     * SFX Volume
+     **************************************************************************/
+
     void OpenALAudioPlayer::setSfxVolume(float volume) {
         m_sfxVolume = clamp(volume, 0.0f, 1.0f);
         applyGlobalVolume();
     }
 
-    float OpenALAudioPlayer::getSfxVolume() const {
-        return m_sfxVolume;
-    }
+    /**************************************************************************
+     * Sound Effect Unloading
+     **************************************************************************/
 
+    /**
+     * @brief Remove a sound effect from memory and delete its OpenAL buffers.
+     */
     void OpenALAudioPlayer::unloadSoundEffect(const std::string& name) {
         auto it = m_sfxCache.find(name);
         if (it == m_sfxCache.end())
@@ -248,6 +296,9 @@ namespace retronomicon::opengl::audio {
         m_sfxCache.erase(it);
     }
 
+    /**
+     * @brief Clear ALL cached SFX and delete associated OpenAL resources.
+     */
     void OpenALAudioPlayer::clearSoundCache() {
         for (auto& [_, inst] : m_sfxCache) {
             alDeleteSources(1, &inst.source);
@@ -260,10 +311,16 @@ namespace retronomicon::opengl::audio {
      * 3D Positional Audio
      **************************************************************************/
 
+    /**
+     * @brief Set the listener's 3D position in the scene.
+     */
     void OpenALAudioPlayer::setListenerPosition(const Vec3& pos) {
         alListener3f(AL_POSITION, pos.x, pos.y, pos.z);
     }
 
+    /**
+     * @brief Play a 3D sound from a specific world position.
+     */
     void OpenALAudioPlayer::playSoundEffect3D(const std::string& name,
                                              const Vec3& pos,
                                              float volume,
@@ -286,6 +343,12 @@ namespace retronomicon::opengl::audio {
      * Error Checking
      **************************************************************************/
 
+    /**
+     * @brief Check for AL errors and print a message if one is found.
+     *
+     * @param context Human-readable label for where the error occurred.
+     * @return True if an error was detected.
+     */
     bool OpenALAudioPlayer::checkALError(const std::string& context) {
         ALenum err = alGetError();
         if (err != AL_NO_ERROR) {
