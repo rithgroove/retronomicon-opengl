@@ -9,57 +9,103 @@
 namespace retronomicon::opengl::asset {
 
     /**
-     * @brief A sound effect asset that ONLY decodes audio data (WAV/OGG)
-     *        and does NOT create any OpenAL buffers or sources.
+     * @brief Decoder-only sound effect asset for OpenAL backends.
      *
-     * The OpenALAudioPlayer owns OpenAL buffers/sources.
+     * This class is responsible for **decoding audio files only**
+     * (e.g. WAV, OGG) into raw PCM data.
+     *
+     * ⚠️ Important design rule:
+     *  - This class does **NOT** create or own any OpenAL buffers or sources.
+     *  - All OpenAL objects are owned and managed by `OpenALAudioPlayer`.
+     *
+     * This separation ensures:
+     *  - clean ownership boundaries,
+     *  - predictable lifetime management,
+     *  - backend-agnostic asset handling.
      */
-    class OpenALSoundEffectAsset final : public retronomicon::asset::SoundEffectAsset {
+    class OpenALSoundEffectAsset final
+        : public retronomicon::asset::SoundEffectAsset {
     public:
 
         /**
          * @brief Construct a decoder-only sound effect asset.
-         * @param path Path to audio file.
+         *
+         * @param path Path to the audio file (WAV or OGG).
          */
-        OpenALSoundEffectAsset(const std::string& path);
+        explicit OpenALSoundEffectAsset(const std::string& path);
 
         /**
-         * @brief Construct with explicit path + asset name.
+         * @brief Construct with explicit file path and asset name.
+         *
+         * @param path Path to the audio file.
+         * @param name Asset identifier.
          */
         OpenALSoundEffectAsset(std::string path, std::string name);
 
         /**
-         * @brief Destructor — no OpenAL cleanup because we no longer own AL objects.
+         * @brief Destructor.
+         *
+         * No OpenAL cleanup is required because this class does not
+         * own buffers or sources.
          */
         ~OpenALSoundEffectAsset() override = default;
 
         /**
-         * @brief Decode WAV or OGG audio data into PCM memory.
+         * @brief Decode audio data into raw PCM format.
          *
-         * OpenALAudioPlayer will upload this PCM data into an AL buffer.
+         * Supported formats:
+         *  - WAV
+         *  - OGG
          *
-         * @param outData  The returned PCM audio bytes.
-         * @param outFmt   The OpenAL format (AL_FORMAT_MONO16, etc.)
-         * @param outFreq  Sampling rate
-         * @return true if decoding succeeded.
+         * The decoded PCM data is intended to be uploaded into
+         * an OpenAL buffer by `OpenALAudioPlayer`.
+         *
+         * @param outData Output buffer containing raw PCM bytes.
+         * @param outFmt  OpenAL format (e.g. `AL_FORMAT_MONO16`).
+         * @param outFreq Sampling rate in Hz.
+         *
+         * @return true if decoding succeeded, false otherwise.
          */
-        bool decode(std::vector<char>& outData, ALenum& outFmt, ALsizei& outFreq);
+        bool decode(std::vector<char>& outData,
+                    ALenum& outFmt,
+                    ALsizei& outFreq);
 
         /**
-         * @brief Dummy overrides (no OpenAL source/buffer anymore).
+         * @name Disabled Playback Interface
+         *
+         * These overrides exist only to satisfy the SoundEffectAsset interface.
+         * Playback and resource ownership are intentionally delegated to
+         * OpenALAudioPlayer.
          */
+        ///@{
         bool load() override { return true; }
         void unload() override {}
         void play(bool loop = false) override {}
         void stop() override {}
+        ///@}
 
     private:
-        // Internal decoders
+        /**
+         * @brief Decode a WAV audio file.
+         *
+         * @param path   Path to WAV file.
+         * @param data   Output PCM buffer.
+         * @param format OpenAL format.
+         * @param freq   Sample rate.
+         */
         bool loadWavFile(const std::string& path,
                          std::vector<char>& data,
                          ALenum& format,
                          ALsizei& freq);
 
+        /**
+         * @brief Decode an OGG/Vorbis audio file.
+         *
+         * @param path   Path to OGG file.
+         * @param data   Output PCM buffer.
+         * @param format OpenAL format.
+         * @param freq   Sample rate.
+         */
         bool loadOggFile(const std::string& path,
                          std::vector<char>& data,
                          ALenum& format,
