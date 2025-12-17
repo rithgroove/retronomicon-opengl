@@ -17,7 +17,8 @@ static inline void uploadTexture(
     if (width <= 0 || height <= 0)
         throw std::runtime_error("OpenGLTexture: invalid dimensions");
 
-    GLint format = (channels == 4) ? GL_RGBA : GL_RGB;
+    GLint internalFormat = (channels == 4) ? GL_RGBA8 : GL_RGB8;
+    GLenum dataFormat    = (channels == 4) ? GL_RGBA  : GL_RGB;
 
     glGenTextures(1, &id);
     glBindTexture(GL_TEXTURE_2D, id);
@@ -26,15 +27,16 @@ static inline void uploadTexture(
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     glTexImage2D(
         GL_TEXTURE_2D,
         0,
-        format,
+        internalFormat,
         width,
         height,
         0,
-        format,
+        dataFormat,
         GL_UNSIGNED_BYTE,
         pixels
     );

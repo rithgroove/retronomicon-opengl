@@ -7,7 +7,11 @@
 #include "retronomicon/asset/font_asset.h"
 
 namespace retronomicon::opengl::asset {
-
+    struct GlyphBitmap {
+        int width;
+        int height;
+        std::vector<uint8_t> pixels; // grayscale
+    };
     /**
      * @brief OpenGL-specific font asset implementation.
      *
@@ -107,6 +111,7 @@ namespace retronomicon::opengl::asset {
         std::vector<uint8_t> m_pixels; ///< RGBA atlas pixel buffer.
         int m_atlasWidth  = 0;         ///< Atlas width in pixels.
         int m_atlasHeight = 0;         ///< Atlas height in pixels.
+        std::unordered_map<char, GlyphBitmap> m_bitmaps;
 
         // --------------------------------------------------------
         // Internal loading steps

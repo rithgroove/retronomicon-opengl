@@ -9,16 +9,21 @@ bool OpenGLFontAsset::load() {
     if (!loadGlyphs()) {
         std::cerr << "[OpenGLFontAsset] Failed to load glyph metrics.\n";
         return false;
+    }else{
+        std::cout << "[OpenGLFontAsset] Successfully load glyph metrics\n" << std::endl;
     }
 
     if (!buildAtlas()) {
         std::cerr << "[OpenGLFontAsset] Failed to build glyph atlas.\n";
         return false;
+    }else{
+        std::cout << "[OpenGLFontAsset] Successfully build glyph atlas\n" << std::endl;
     }
 
     m_isLoaded = true;
     return true;
 }
+
 
 void OpenGLFontAsset::unload() {
     if (!m_isLoaded) return;
@@ -29,6 +34,7 @@ void OpenGLFontAsset::unload() {
     m_atlasHeight = 0;
 
     m_glyphs.clear();
+    m_bitmaps.clear();
 
     m_isLoaded = false;
 }
@@ -43,10 +49,7 @@ std::string OpenGLFontAsset::to_string() const {
 }
 
 bool OpenGLFontAsset::loadGlyphs() {
-    // ********** STUB **********
-    // Will be replaced by stb_truetype integration.
-    // This stub creates dummy glyphs so the engine runs.
-
+    // STUB
     for (char c = 32; c < 127; c++) {
         GlyphMetrics gm;
         gm.width    = 16;
@@ -55,41 +58,99 @@ bool OpenGLFontAsset::loadGlyphs() {
         gm.bearingX = 0;
         gm.bearingY = 16;
         m_glyphs[c] = gm;
-    }
 
+        GlyphBitmap bmp;
+        bmp.width = 16;
+        bmp.height = 16;
+        bmp.pixels.resize(16 * 16, 255); // solid glyph
+
+        m_bitmaps[c] = std::move(bmp);
+    }
     return true;
 }
+
 
 bool OpenGLFontAsset::buildAtlas() {
-    // ********** STUB **********
-    // Generates a dummy 256x256 white atlas.
-    m_atlasWidth = 256;
-    m_atlasHeight = 256;
+    constexpr int padding = 2;
+    constexpr int channels = 4;
 
-    int channels = 4;
-    m_pixels.resize(m_atlasWidth * m_atlasHeight * channels, 255);
+    // 1. Estimate atlas width (simple heuristic)
+    int estimatedWidth = 512;
+    int x = padding;
+    int y = padding;
+    int rowHeight = 0;
 
-    // Put glyphs into grid layout for now
-    int cellSize = 16;
-    int cols = m_atlasWidth / cellSize;
+    m_atlasWidth  = estimatedWidth;
+    m_atlasHeight = padding;
 
-    int i = 0;
+    // 2. First pass: layout glyphs
     for (auto& [c, gm] : m_glyphs) {
-        int cx = (i % cols) * cellSize;
-        int cy = (i / cols) * cellSize;
+        if (x + gm.width + padding > m_atlasWidth) {
+            // new row
+            x = padding;
+            y += rowHeight + padding;
+            rowHeight = 0;
+        }
 
-        gm.atlasX = cx;
-        gm.atlasY = cy;
+        gm.atlasX = x;
+        gm.atlasY = y;
 
-        gm.u0 = float(cx) / m_atlasWidth;
-        gm.v0 = float(cy) / m_atlasHeight;
-        gm.u1 = float(cx + gm.width) / m_atlasWidth;
-        gm.v1 = float(cy + gm.height) / m_atlasHeight;
+        x += gm.width + padding;
+        rowHeight = std::max(rowHeight, gm.height);
+    }
 
-        i++;
+    m_atlasHeight = y + rowHeight + padding;
+
+    // 3. Round atlas size to power-of-two (OpenGL-friendly)
+    auto nextPOT = [](int v) {
+        int p = 1;
+        while (p < v) p <<= 1;
+        return p;
+    };
+
+    m_atlasWidth  = nextPOT(m_atlasWidth);
+    m_atlasHeight = nextPOT(m_atlasHeight);
+
+    // 4. Allocate pixel buffer (transparent background)
+    m_pixels.assign(m_atlasWidth * m_atlasHeight * channels, 0);
+
+    // 5. Rasterize glyph bitmaps into RGBA atlas
+    for (auto& [c, gm] : m_glyphs) {
+        auto bmpIt = m_bitmaps.find(c);
+        if (bmpIt == m_bitmaps.end())
+            continue;
+
+        const GlyphBitmap& bmp = bmpIt->second;
+
+        for (int gy = 0; gy < bmp.height; ++gy) {
+            for (int gx = 0; gx < bmp.width; ++gx) {
+                int srcIdx = (bmp.height - 1 - gy) * bmp.width + gx;
+
+                uint8_t coverage = bmp.pixels[srcIdx];
+
+                int px = gm.atlasX + gx;
+                int py = gm.atlasY + gy;
+
+                int dstIdx = (py * m_atlasWidth + px) * 4;
+
+                // RGBA: white text, alpha from glyph coverage
+                m_pixels[dstIdx + 0] = 255;
+                m_pixels[dstIdx + 1] = 0;
+                m_pixels[dstIdx + 2] = 0;
+                m_pixels[dstIdx + 3] = 255;
+
+            }
+        }
+
+        // 6. Compute UVs
+        gm.u0 = float(gm.atlasX) / m_atlasWidth;
+        gm.v0 = float(gm.atlasY) / m_atlasHeight;
+        gm.u1 = float(gm.atlasX + gm.width) / m_atlasWidth;
+        gm.v1 = float(gm.atlasY + gm.height) / m_atlasHeight;
     }
 
     return true;
 }
+
 
 } // namespace retronomicon::opengl::asset
