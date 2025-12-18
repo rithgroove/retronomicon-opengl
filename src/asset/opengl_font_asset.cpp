@@ -1,5 +1,9 @@
 #include "retronomicon/asset/opengl_font_asset.h"
 #include <iostream>
+#define STB_TRUETYPE_IMPLEMENTATION
+#include "stb_truetype.h"
+#include <cstring>
+#include <fstream> 
 
 namespace retronomicon::opengl::asset {
 
@@ -24,6 +28,16 @@ bool OpenGLFontAsset::load() {
     return true;
 }
 
+static bool loadFile(const std::string& path, std::vector<uint8_t>& out) {
+    std::ifstream file(path, std::ios::binary | std::ios::ate);
+    if (!file) return false;
+
+    std::streamsize size = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    out.resize(size);
+    return file.read(reinterpret_cast<char*>(out.data()), size).good();
+}
 
 void OpenGLFontAsset::unload() {
     if (!m_isLoaded) return;
@@ -49,26 +63,68 @@ std::string OpenGLFontAsset::to_string() const {
 }
 
 bool OpenGLFontAsset::loadGlyphs() {
-    // STUB
-    for (char c = 32; c < 127; c++) {
+    std::vector<uint8_t> fontBuffer;
+    if (!loadFile(m_path, fontBuffer)) {
+        std::cerr << "[OpenGLFontAsset] Failed to read font file: " << m_path << "\n";
+        return false;
+    }
+
+    stbtt_fontinfo font;
+    if (!stbtt_InitFont(&font, fontBuffer.data(), 0)) {
+        std::cerr << "[OpenGLFontAsset] stbtt_InitFont failed\n";
+        return false;
+    }
+
+    float scale = stbtt_ScaleForPixelHeight(&font, (float)m_pointSize);
+
+    int ascent, descent, lineGap;
+    stbtt_GetFontVMetrics(&font, &ascent, &descent, &lineGap);
+
+    m_glyphs.clear();
+    m_bitmaps.clear();
+
+    for (char c = 32; c < 127; ++c) {
+        int w, h, xoff, yoff;
+
+        unsigned char* bitmap = stbtt_GetCodepointBitmap(
+            &font,
+            0,
+            scale,
+            c,
+            &w,
+            &h,
+            &xoff,
+            &yoff
+        );
+
+        int advance, lsb;
+        stbtt_GetCodepointHMetrics(&font, c, &advance, &lsb);
+
         GlyphMetrics gm;
-        gm.width    = 16;
-        gm.height   = 16;
-        gm.advanceX = 16;
-        gm.bearingX = 0;
-        gm.bearingY = 16;
+        gm.width    = w;
+        gm.height   = h;
+        gm.advanceX = int(advance * scale);
+        gm.advanceY = 0;
+        gm.bearingX = xoff;
+        gm.bearingY = -yoff; // IMPORTANT for Y-down coordinate system
+
         m_glyphs[c] = gm;
 
-        GlyphBitmap bmp;
-        bmp.width = 16;
-        bmp.height = 16;
-        bmp.pixels.resize(16 * 16, 255); // solid glyph
+        if (w > 0 && h > 0) {
+            GlyphBitmap bmp;
+            bmp.width  = w;
+            bmp.height = h;
+            bmp.pixels.resize(w * h);
 
-        m_bitmaps[c] = std::move(bmp);
+            std::memcpy(bmp.pixels.data(), bitmap, w * h);
+            m_bitmaps[c] = std::move(bmp);
+        }
+
+        stbtt_FreeBitmap(bitmap, nullptr);
     }
+
     return true;
 }
-
 
 bool OpenGLFontAsset::buildAtlas() {
     constexpr int padding = 2;
@@ -124,8 +180,7 @@ bool OpenGLFontAsset::buildAtlas() {
 
         for (int gy = 0; gy < bmp.height; ++gy) {
             for (int gx = 0; gx < bmp.width; ++gx) {
-                int srcIdx = (bmp.height - 1 - gy) * bmp.width + gx;
-
+                int srcIdx = gy * bmp.width + gx;
                 uint8_t coverage = bmp.pixels[srcIdx];
 
                 int px = gm.atlasX + gx;
@@ -133,11 +188,12 @@ bool OpenGLFontAsset::buildAtlas() {
 
                 int dstIdx = (py * m_atlasWidth + px) * 4;
 
-                // RGBA: white text, alpha from glyph coverage
+                // White text, glyph in alpha
                 m_pixels[dstIdx + 0] = 255;
-                m_pixels[dstIdx + 1] = 0;
-                m_pixels[dstIdx + 2] = 0;
-                m_pixels[dstIdx + 3] = 255;
+                m_pixels[dstIdx + 1] = 255;
+                m_pixels[dstIdx + 2] = 255;
+                m_pixels[dstIdx + 3] = coverage;
+
 
             }
         }
