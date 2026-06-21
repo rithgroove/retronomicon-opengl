@@ -10,7 +10,7 @@ target_include_directories(
     ${RETRO_DIR}/external/stb
     ${RETRO_OPENGL_DIR}/include
     ${RETRO_OPENGL_DIR}/external/glad/include
-    ${RETRO_OPENGL_DIR}/external/gflw/include
+    ${RETRO_OPENGL_DIR}/external/glfw/include
     ${RETRO_OPENGL_DIR}/external/openal/include
 )
 
